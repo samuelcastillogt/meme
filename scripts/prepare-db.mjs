@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import Database from "better-sqlite3";
-import { getVirtualEnvPython } from "./python-env.mjs";
+import { getBuildScraperLimit, getVirtualEnvPython } from "./python-env.mjs";
 
 const databasePath = process.env.MEME_DB_PATH || "./memes.db";
 
@@ -32,7 +32,14 @@ if (requestsCheck.status !== 0) {
   const install = spawnSync(scraperPython, ["-m", "pip", "install", "requests"], { stdio: "inherit" });
   if (install.status !== 0) process.exit(install.status || 1);
 }
-const args = ["meme_scraper.py", "--db", databasePath, "--delay", process.env.SCRAPER_BUILD_DELAY || "0.1"];
+const limit = getBuildScraperLimit(process.env.SCRAPER_BUILD_LIMIT);
+const args = [
+  "meme_scraper.py",
+  "--db", databasePath,
+  "--delay", process.env.SCRAPER_BUILD_DELAY || "0.1",
+  "--limit", limit,
+];
+console.log(`[prepare-db] El build procesará hasta ${limit === "-1" ? "todas las" : limit} URLs.`);
 if (process.env.SCRAPER_BUILD_LANG) args.push("--lang", process.env.SCRAPER_BUILD_LANG);
 if (contentColumn !== "content_tr" && contentColumn !== "summary_tr") args.push("--no-translate");
 

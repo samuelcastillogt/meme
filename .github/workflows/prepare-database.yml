@@ -1,0 +1,56 @@
+name: Prepare meme database
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prepare-database-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Check database
+        id: database
+        shell: bash
+        run: |
+          if [ -f memes.db ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "memes.db already exists; nothing to generate."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python
+        if: steps.database.outputs.exists == 'false'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install scraper dependencies
+        if: steps.database.outputs.exists == 'false'
+        run: python -m pip install requests
+
+      - name: Generate complete database
+        if: steps.database.outputs.exists == 'false'
+        run: python meme_scraper.py --no-translate --delay 0.05 --limit -1
+
+      - name: Commit database to branch
+        if: steps.database.outputs.exists == 'false'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f memes.db
+          git commit -m "Generate meme database"
+          git push
