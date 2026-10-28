@@ -161,8 +161,10 @@ def translate(session, text, lang, delay, image_url=None):
 def sync_sitemap(db, session):
     """Inserta memes nuevos y marca como pendientes los que cambiaron de lastmod."""
     images = load_image_sitemap(session)
+    urls = list(load_sitemap(session))
     new = changed = 0
-    for slug, url, lastmod in load_sitemap(session):
+    print(f"Sitemap: {len(urls)} URLs de artículos encontradas", flush=True)
+    for index, (slug, url, lastmod) in enumerate(urls, 1):
         row = db.execute("SELECT lastmod FROM memes WHERE slug=?", (slug,)).fetchone()
         if row is None:
             db.execute("INSERT INTO memes(slug, url, lastmod) VALUES (?,?,?)", (slug, url, lastmod))
@@ -171,8 +173,10 @@ def sync_sitemap(db, session):
             db.execute("UPDATE memes SET lastmod=?, status='pending' WHERE slug=?", (lastmod, slug))
             changed += 1
         db.execute("UPDATE memes SET image_url=? WHERE slug=?", (images.get(url), slug))
+        if index % 250 == 0 or index == len(urls):
+            print(f"[sitemap {index}/{len(urls)}] URLs revisadas", flush=True)
     db.commit()
-    print(f"Sitemap: {new} nuevos, {changed} actualizados, {len(images)} imágenes")
+    print(f"Sitemap: {new} nuevas, {changed} actualizadas, {len(images)} imágenes", flush=True)
 
 
 def scrape(db, session, limit, delay):
@@ -180,6 +184,7 @@ def scrape(db, session, limit, delay):
     rows = db.execute("SELECT slug, url FROM memes WHERE status='pending' OR "
                       "(status='error' AND content_md IS NULL AND error != 'md 404') LIMIT ?",
                       (limit,)).fetchall()
+    print(f"Descarga: {len(rows)} URLs por procesar", flush=True)
     for i, (slug, url) in enumerate(rows, 1):
         try:
             md = get(session, f"{url}/md")
@@ -189,7 +194,7 @@ def scrape(db, session, limit, delay):
                 title, summary = parse_md(md)
                 db.execute("UPDATE memes SET title=?, summary=?, content_md=?, status='scraped', "
                            "error=NULL, scraped_at=? WHERE slug=?", (title, summary, md, now(), slug))
-            print(f"[descarga {i}/{len(rows)}] {slug}")
+            print(f"[descarga {i}/{len(rows)}] {slug}", flush=True)
         except Exception as e:
             db.execute("UPDATE memes SET status='error', error=? WHERE slug=?", (str(e)[:500], slug))
             print(f"[descarga {i}/{len(rows)}] {slug} ERROR: {e}", file=sys.stderr)
@@ -201,13 +206,14 @@ def translate_all(db, lang, limit, delay):
     session = new_session()
     rows = db.execute("SELECT slug, summary, content_md, image_url FROM memes "
                       "WHERE status='scraped' LIMIT ?", (limit,)).fetchall()
+    print(f"Traducción: {len(rows)} URLs por procesar a '{lang}'", flush=True)
     for i, (slug, summary, md, image_url) in enumerate(rows, 1):
         try:
             db.execute("UPDATE memes SET summary_tr=?, content_tr=?, lang=?, "
                        "status='translated', error=NULL, translated_at=? WHERE slug=?",
                        (translate(session, summary, lang, delay),
                         translate(session, md, lang, delay, image_url), lang, now(), slug))
-            print(f"[traducción {i}/{len(rows)}] {slug}")
+            print(f"[traducción {i}/{len(rows)}] {slug}", flush=True)
         except Exception as e:
             # Se queda en 'scraped' para reintentar la traducción en la siguiente ejecución
             db.execute("UPDATE memes SET error=? WHERE slug=?", (f"traducción: {e}"[:500], slug))

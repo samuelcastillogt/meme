@@ -57,6 +57,7 @@ export async function deleteMemeAction(slug: string) {
 
 export async function startScraperAction(formData: FormData) {
   await requireAdmin();
+  if (process.env.VERCEL) redirect("/admin?scraper=build");
   const mode = String(formData.get("mode") || "full") as ScraperMode;
   const lang = String(formData.get("lang") || "es").trim();
   const limit = Number.parseInt(String(formData.get("limit") || "10"), 10);

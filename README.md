@@ -13,6 +13,10 @@ La aplicación usa `./memes.db` por defecto. Se puede indicar otra ruta con `MEM
 
 `MEME_CONTENT_COLUMN` define la columna mostrada en la portada y en cada publicación. Admite `summary`, `summary_tr`, `content_md` o `content_tr`. Si la variable no existe, se utiliza `content_md`.
 
+Antes de cada build se ejecuta `scripts/prepare-db.mjs`. Si `memes.db` no existe, inicia `meme_scraper.py` y muestra en los logs de GitHub/Vercel el total de URLs y cada entrada procesada. Si la base ya existe, muestra su cantidad de registros y continúa inmediatamente.
+
+En Vercel, la base incluida se copia a `/tmp` para que SQLite pueda abrirla. Esa copia pertenece a cada instancia serverless: las ediciones, visitas y trabajos iniciados durante el runtime no constituyen almacenamiento persistente entre instancias. La versión estable de los posts es la base generada durante el build o incluida en la rama de GitHub.
+
 ## Rutas
 
 - `/`: archivo público renderizado en el servidor.

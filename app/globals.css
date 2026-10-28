@@ -23,6 +23,7 @@ button, input, textarea { font: inherit; }
 .nav-inner nav > a { text-decoration: none; }
 .button { display: inline-flex; min-height: 42px; padding: 0 19px; border: var(--line); border-radius: 3px; align-items: center; justify-content: center; text-decoration: none; font-weight: 900; cursor: pointer; }
 .button-dark { background: var(--ink); color: white; }
+.button:disabled { cursor: not-allowed; opacity: .5; }
 .button-light { background: white; color: var(--ink); }
 .hero { min-height: 590px; display: grid; grid-template-columns: .9fr 1.1fr; align-items: center; gap: 56px; padding-block: 72px 40px; }
 .eyebrow { margin: 0 0 18px; font-size: 12px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
@@ -114,6 +115,9 @@ input:focus, textarea:focus { outline: 3px solid var(--blue); border-color: var(
 .stat-grid > div:last-child { border: 0; background: var(--yellow); }
 .stat-grid span { display: block; font-size: 12px; font-weight: 900; text-transform: uppercase; }
 .stat-grid strong { display: block; margin-top: 10px; font: 900 44px var(--display); }
+.deployment-status { display: flex; align-items: center; justify-content: space-between; gap: 40px; margin-top: 40px; padding: 26px 30px; border: var(--line); background: #e9f8ed; }
+.deployment-status h2 { margin: 12px 0 0; font-size: 30px; }
+.deployment-status p { max-width: 560px; margin: 0; line-height: 1.5; }
 .scraper-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; margin-top: 40px; padding: 36px; border: var(--line); background: linear-gradient(125deg, var(--pink), var(--cream)); }
 .scraper-intro h2, .jobs-heading h2 { margin: 0; font-size: 34px; }
 .scraper-intro > p:last-child { max-width: 460px; line-height: 1.5; }
@@ -191,5 +195,6 @@ input:focus, textarea:focus { outline: 3px solid var(--blue); border-color: var(
   .stat-grid > div { border-right: 0; border-bottom: var(--line); }
   .admin-actions { width: 100%; }
   .scraper-panel { grid-template-columns: 1fr; gap: 24px; padding: 24px 18px; }
+  .deployment-status { align-items: flex-start; flex-direction: column; }
   .jobs-heading { align-items: flex-start; flex-direction: column; gap: 8px; }
 }

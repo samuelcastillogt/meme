@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
-import path from "node:path";
 import { getContentColumn, type ContentColumn } from "./content-column";
+import { prepareDatabasePath } from "./database-path";
 
 export type Meme = {
   slug: string;
@@ -45,7 +45,7 @@ type MemeRow = {
 const connections = new Map<string, Database.Database>();
 
 function getDatabase(databasePath = process.env.MEME_DB_PATH ?? "./memes.db") {
-  const key = databasePath === ":memory:" ? databasePath : path.resolve(/* turbopackIgnore: true */ databasePath);
+  const key = databasePath === ":memory:" ? databasePath : prepareDatabasePath({ configuredPath: databasePath });
   const existing = connections.get(key);
   if (existing) return existing;
 
@@ -189,7 +189,7 @@ export function getRecentScraperJobs(databasePath?: string, limit = 5): ScraperJ
 }
 
 export function closeDatabase(databasePath = process.env.MEME_DB_PATH ?? "./memes.db") {
-  const key = databasePath === ":memory:" ? databasePath : path.resolve(/* turbopackIgnore: true */ databasePath);
+  const key = databasePath === ":memory:" ? databasePath : prepareDatabasePath({ configuredPath: databasePath });
   connections.get(key)?.close();
   connections.delete(key);
 }
