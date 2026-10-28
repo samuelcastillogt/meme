@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/prepare-db.mjs",
+    "prebuild": "npm rebuild better-sqlite3 && node scripts/prepare-db.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
