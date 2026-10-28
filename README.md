@@ -15,7 +15,9 @@ La aplicación usa `./memes.db` por defecto. Se puede indicar otra ruta con `MEM
 
 Antes de cada build se ejecuta `scripts/prepare-db.mjs`. Si `memes.db` no existe, inicia `meme_scraper.py` y muestra en los logs de GitHub/Vercel el total de URLs y cada entrada procesada. Si la base ya existe, muestra su cantidad de registros y continúa inmediatamente.
 
-Para no superar el límite de 45 minutos, el fallback de Vercel procesa 100 posts por defecto. Se puede cambiar con `SCRAPER_BUILD_LIMIT`. El workflow `.github/workflows/prepare-database.yml` genera la base completa fuera del build, la incorpora a la rama y activa un nuevo deployment de Vercel. También puede iniciarse manualmente desde la pestaña **Actions** de GitHub.
+Para no superar el límite de 45 minutos, el fallback de Vercel procesa 100 posts por defecto. Se puede cambiar con `SCRAPER_BUILD_LIMIT`. El workflow `.github/workflows/prepare-database.yml` genera la base completa fuera del build, la incorpora a la rama y activa un nuevo deployment de Vercel.
+
+Desde **Actions → Prepare meme database → Run workflow** se puede seleccionar `translate`, indicar el idioma y el límite (`-1` para todas). El workflow traduce las filas pendientes, actualiza `memes.db` en la rama y activa otro deployment.
 
 En Vercel, la base incluida se copia a `/tmp` para que SQLite pueda abrirla. Esa copia pertenece a cada instancia serverless: las ediciones, visitas y trabajos iniciados durante el runtime no constituyen almacenamiento persistente entre instancias. La versión estable de los posts es la base generada durante el build o incluida en la rama de GitHub.
 
